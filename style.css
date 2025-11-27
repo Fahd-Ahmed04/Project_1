@@ -44,6 +44,15 @@ h1 {
     box-sizing: border-box;
     text-align: right;
 }
+#email-input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    text-align: right;
+}
 
 /* تنسيق النتيجة */
 .result-container p {
