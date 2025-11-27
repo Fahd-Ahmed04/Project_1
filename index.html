@@ -2,19 +2,32 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>الاختبار العام</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار الكلية - تسجيل ومراجعة</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
+    
+    <div id="login-container" class="quiz-container login-container" style="display: none;">
+        <h1>تسجيل الدخول للاختبار</h1>
+        <p>الرجاء إدخال اسمك أو رقمك الجامعي لبدء الاختبار.</p>
+        <input type="text" id="username-input" placeholder="الاسم أو الرقم الجامعي" required>
+        <button id="login-button" class="next-btn">بدء الاختبار</button>
+    </div>
+
+    <div id="quiz-container" class="quiz-container" style="display: none;">
         <h1>اختبار المعرفة</h1>
         <div id="question-container">
             <h2 id="question">نص السؤال سيظهر هنا؟</h2>
             <div id="answer-buttons">
                 </div>
         </div>
-        <button id="next-button">التالي</button>
+        <button id="next-button" style="display: none;">التالي</button>
     </div>
+
+    <div id="result-container" class="quiz-container result-container" style="display: none;">
+        </div>
+
     <script src="script.js"></script>
 </body>
 </html>

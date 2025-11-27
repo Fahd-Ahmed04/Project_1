@@ -33,31 +33,99 @@ const questions = [
     }
 ];
 
+// 🔑 مفاتيح التخزين المحلية
+const USER_KEY = 'quiz_username';
+const COMPLETED_KEY = 'quiz_completed';
+const SCORE_KEY = 'quiz_score';
+
 let currentQuestionIndex = 0;
 let score = 0;
+
+// 🔗 عناصر واجهة المستخدم
+const loginContainer = document.getElementById("login-container");
+const quizContainer = document.getElementById("quiz-container");
+const resultContainer = document.getElementById("result-container");
+
+const usernameInput = document.getElementById("username-input");
+const loginButton = document.getElementById("login-button");
 
 const questionElement = document.getElementById("question");
 const answerButtonsElement = document.getElementById("answer-buttons");
 const nextButton = document.getElementById("next-button");
 
+// ----------------------------------------------------
+// 🆕 وظائف إدارة حالة التسجيل والاختبار
+// ----------------------------------------------------
 
-// 🆕 دالة لخلط عناصر المصفوفة (لجعل الأسئلة عشوائية)
+// دالة لخلط عناصر المصفوفة (لجعل الأسئلة والإجابات عشوائية)
 function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        // تبديل الأماكن بين العنصر الحالي والعنصر العشوائي
         [array[i], array[j]] = [array[j], array[i]]; 
     }
 }
 
+function checkLoginState() {
+    const isCompleted = localStorage.getItem(COMPLETED_KEY);
+    const username = localStorage.getItem(USER_KEY);
+
+    // إخفاء الكل أولاً
+    loginContainer.style.display = 'none';
+    quizContainer.style.display = 'none';
+    resultContainer.style.display = 'none';
+
+    if (username && isCompleted === 'true') {
+        // الحالة 3: مسجل دخول وأكمل الاختبار
+        displayResultFromStorage();
+    } else if (username) {
+        // الحالة 2: مسجل دخول ولم يكمل الاختبار
+        quizContainer.style.display = 'block';
+        startQuiz();
+    } else {
+        // الحالة 1: غير مسجل دخول
+        loginContainer.style.display = 'block';
+    }
+}
+
+function handleLogin() {
+    const username = usernameInput.value.trim();
+    if (username) {
+        localStorage.setItem(USER_KEY, username);
+        checkLoginState(); // الانتقال إلى حالة الاختبار
+    } else {
+        alert("الرجاء إدخال اسمك أو رقمك الجامعي.");
+    }
+}
+
+function displayResultFromStorage() {
+    const username = localStorage.getItem(USER_KEY) || 'يا مستخدم';
+    const finalScore = localStorage.getItem(SCORE_KEY) || 0;
+    
+    // عرض النتيجة المخزنة
+    resultContainer.innerHTML = `
+        <h1>مرحباً ${username}!</h1>
+        <h2>نتيجة الاختبار</h2>
+        <p>لقد أكملت الاختبار سابقاً. نتيجتك النهائية هي:</p>
+        <p style="font-size: 2.5rem; color: #007bff; font-weight: bold;">
+            ${finalScore} / ${questions.length}
+        </p>
+        <p style="color: #dc3545; font-weight: bold;">
+            لا يمكن إعادة الاختبار بعد التسجيل والإكمال.
+        </p>
+    `;
+    resultContainer.style.display = 'block';
+}
+
+// ----------------------------------------------------
+// وظائف الاختبار الأساسية (مُعدَّلة)
+// ----------------------------------------------------
 
 function startQuiz() {
-    // 📢 يتم خلط الأسئلة هنا في بداية كل اختبار
+    // خلط الأسئلة عند بدء الاختبار
     shuffleArray(questions); 
 
     currentQuestionIndex = 0;
     score = 0;
-    nextButton.innerHTML = "التالي";
     nextButton.style.display = "none";
     showQuestion();
 }
@@ -68,7 +136,7 @@ function showQuestion() {
     const questionNo = currentQuestionIndex + 1;
     questionElement.innerHTML = questionNo + ". " + currentQuestion.question;
 
-    // ملاحظة: يُفضل خلط الإجابات أيضاً لجعلها عشوائية
+    // خلط الإجابات
     shuffleArray(currentQuestion.answers); 
 
     currentQuestion.answers.forEach(answer => {
@@ -101,11 +169,12 @@ function selectAnswer(e) {
         selectedBtn.classList.add("incorrect");
     }
 
+    // عرض الإجابة الصحيحة وتعطيل الأزرار
     Array.from(answerButtonsElement.children).forEach(button => {
         if (button.dataset.correct === "true") {
             button.classList.add("correct");
         }
-        button.disabled = true; // تعطيل كل الأزرار بعد الاختيار
+        button.disabled = true; 
     });
     nextButton.style.display = "block";
 }
@@ -115,23 +184,29 @@ function handleNextButton() {
     if (currentQuestionIndex < questions.length) {
         showQuestion();
     } else {
-        showResult();
+        showFinalResult(); // استدعاء دالة النتيجة النهائية
     }
 }
 
-function showResult() {
-    resetState();
-    questionElement.innerHTML = `لقد أحرزت ${score} من أصل ${questions.length} سؤال!`;
-    nextButton.innerHTML = "إعادة الاختبار";
-    nextButton.style.display = "block";
+// 📢 دالة عرض النتيجة النهائية وحفظ حالة الإكمال
+function showFinalResult() {
+    // 💾 حفظ حالة الإكمال والنتيجة في التخزين المحلي
+    localStorage.setItem(COMPLETED_KEY, 'true');
+    localStorage.setItem(SCORE_KEY, score);
+    
+    // الانتقال إلى عرض النتيجة المخزنة
+    checkLoginState();
 }
 
-nextButton.addEventListener("click", () => {
-    if (currentQuestionIndex < questions.length) {
-        handleNextButton();
-    } else {
-        startQuiz();
-    }
-});
+// ----------------------------------------------------
+// 🚀 تفعيل الأحداث
+// ----------------------------------------------------
 
-startQuiz();
+// البدء عند تحميل الصفحة للتحقق من الحالة
+document.addEventListener('DOMContentLoaded', checkLoginState);
+
+// التعامل مع زر تسجيل الدخول
+loginButton.addEventListener('click', handleLogin);
+
+// التعامل مع زر التالي
+nextButton.addEventListener("click", handleNextButton);
